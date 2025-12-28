@@ -1,0 +1,32 @@
+[grid]
+width = 128
+height = 128
+depth = 128
+
+[generator]
+air_prob = 0.5
+iterations = 12
+
+[seeds]
+base = 0
+count = 60
+
+[[neighbourhoods]]
+type = "von_neumann"
+
+[[neighbourhoods]]
+type = "moore"
+
+[[neighbourhoods]]
+type = "extended_moore"
+radius = 2
+
+[[rulesets]]
+name = "B567_S456"
+birth = [5, 6, 7]
+survival = [4, 5, 6]
+
+[[rulesets]]
+name = "B678_S567"
+birth = [6, 7, 8]
+survival = [5, 6, 7]
