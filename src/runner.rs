@@ -1,10 +1,11 @@
+use std::{path::Path, sync::Mutex};
+
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
-use uuid::Uuid;
 
 use crate::{
     ca::{CAConfig, CAContext, CAEngine},
-    data::{MetricsRow, RunMetadata, save_run},
+    data::{RunInfo, RunMetadata, RunResults},
 };
 
 pub struct RunnerConfig {
@@ -20,12 +21,18 @@ pub struct RunnerConfig {
 
 pub struct Runner {
     config: RunnerConfig,
+    results: Mutex<Vec<RunResults>>,
 }
 
 impl Runner {
     #[must_use]
     pub fn new(config: RunnerConfig) -> Self {
-        Runner { config }
+        let total_runs = config.neighbourhoods.len() * config.rulesets.len() * config.seeds.len();
+
+        Runner {
+            config,
+            results: Mutex::new(Vec::with_capacity(total_runs)),
+        }
     }
 
     pub fn run(&self) {
@@ -52,6 +59,7 @@ impl Runner {
                 pb.inc(1);
             });
 
+        self.write_results();
         pb.finish_with_message("Cavegen complete");
     }
 
@@ -61,8 +69,6 @@ impl Runner {
         rule: &crate::ca::CARule,
         seed: u64,
     ) {
-        let run_id = Uuid::new_v4().to_string();
-
         let context = CAContext::random(
             self.config.width,
             self.config.height,
@@ -79,23 +85,37 @@ impl Runner {
         let mut engine = CAEngine::new(config, context);
         engine.run(self.config.iterations);
 
-        let meta = RunMetadata {
-            run_id: run_id.clone(),
-            seed,
-            neighborhood: neighborhood.name.clone(),
-            grid_size: (self.config.width, self.config.height, self.config.depth),
-            iterations: self.config.iterations,
-        };
+        let info = RunInfo::new(
+            RunMetadata::new(
+                seed,
+                neighborhood.name.clone(),
+                self.config.width,
+                self.config.height,
+                self.config.depth,
+                self.config.iterations,
+                rule.name.clone(),
+                self.config.air_prob,
+            ),
+            engine.context.clone(),
+        );
+        info.save(Path::new("data/runs/"))
+            .expect("Something went wrong");
 
-        let metrics = MetricsRow {
-            run_id: run_id.clone(),
-            iterations: self.config.iterations,
-            v_total: 0,
-            n_comp: 0,
-            v_max: 0,
-            lcr: 0.0,
-        };
+        let results = RunResults::new(info.metadata, 0, 0, 0, 0, 0.0);
+        let mut res_lock = self.results.lock().unwrap();
+        res_lock.push(results);
+    }
 
-        save_run(run_id, &engine.context, &meta, &metrics).unwrap();
+    fn write_results(&self) {
+        let results = self.results.lock().unwrap();
+
+        let file = std::fs::File::create("data/metrics.csv").unwrap();
+        let mut writer = csv::Writer::from_writer(file);
+
+        for r in results.iter() {
+            writer.serialize(r).unwrap();
+        }
+
+        writer.flush().unwrap();
     }
 }
