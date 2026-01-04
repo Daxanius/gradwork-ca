@@ -6,6 +6,7 @@ use std::{
     ops::{Index, IndexMut},
 };
 
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum Axis {
     X,
     Y,
