@@ -252,7 +252,7 @@ impl CAContext {
         ];
 
         for i in 0..n {
-            if visited[i] || !self[i].is_alive() {
+            if visited[i] || self[i].is_alive() {
                 continue;
             }
 
@@ -282,7 +282,7 @@ impl CAContext {
                     }
 
                     let nidx = self.idx(nx, ny, nz);
-                    if !visited[nidx] && self[nidx].is_alive() {
+                    if !visited[nidx] && !self[nidx].is_alive() {
                         visited[nidx] = true;
                         queue.push_back(nidx);
                     }
