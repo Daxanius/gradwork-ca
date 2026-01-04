@@ -1,4 +1,4 @@
-use std::{path::Path, sync::Mutex};
+use std::{path::Path, sync::Mutex, time::Instant};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
@@ -83,9 +83,14 @@ impl Runner {
         };
 
         let mut engine = CAEngine::new(config, context);
-        engine.run(self.config.iterations);
+        let mut logs = Vec::new();
 
-        let info = RunInfo::new(
+        // Time the run
+        let now = Instant::now();
+        engine.run(self.config.iterations, &mut logs);
+        let elapsed = now.elapsed();
+
+        let mut info = RunInfo::new(
             RunMetadata::new(
                 seed,
                 neighborhood.name.clone(),
@@ -98,10 +103,12 @@ impl Runner {
             ),
             engine.context.clone(),
         );
+        info.set_logs(logs);
         info.save(Path::new("data/runs/"))
             .expect("Something went wrong");
 
-        let results = RunResults::new(info.metadata, 0, 0, 0, 0, 0.0);
+        let results =
+            RunResults::from_context(&info.metadata, &engine.context, elapsed.as_millis());
         let mut res_lock = self.results.lock().unwrap();
         res_lock.push(results);
     }

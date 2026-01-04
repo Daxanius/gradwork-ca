@@ -1,7 +1,16 @@
 use rand::{Rng, SeedableRng, rngs::SmallRng};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::ops::{Index, IndexMut};
+use std::{
+    collections::VecDeque,
+    ops::{Index, IndexMut},
+};
+
+pub enum Axis {
+    X,
+    Y,
+    Z,
+}
 
 // A cell for a cellular automation engine. Currently just boolean based, use a u8 to avoid bitpacking for performance
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
@@ -94,6 +103,15 @@ pub struct CARule {
 pub struct CAConfig {
     pub neighborhood: CANeighborhood,
     pub rule: CARule,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct IterationStats {
+    pub iter: usize,
+    pub alive: usize,
+    pub min_neighbors: usize,
+    pub max_neighbors: usize,
+    pub mean_neighbors: f64,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -216,6 +234,119 @@ impl CAContext {
     pub fn cells_mut(&mut self) -> &mut [CACell] {
         &mut self.cells
     }
+
+    #[must_use]
+    pub fn connected_components(&self) -> Vec<Vec<usize>> {
+        let n = self.width() * self.height() * self.depth();
+        let mut visited = vec![false; n];
+        let mut components = Vec::new();
+
+        let dirs = [
+            (1, 0, 0),
+            (-1, 0, 0),
+            (0, 1, 0),
+            (0, -1, 0),
+            (0, 0, 1),
+            (0, 0, -1),
+        ];
+
+        for i in 0..n {
+            if visited[i] || !self[i].is_alive() {
+                continue;
+            }
+
+            let mut queue = VecDeque::new();
+            let mut component = Vec::new();
+
+            visited[i] = true;
+            queue.push_back(i);
+
+            while let Some(idx) = queue.pop_front() {
+                component.push(idx);
+                let (x, y, z) = self.pos(idx);
+
+                for (dx, dy, dz) in dirs {
+                    let nx = x as i32 + dx;
+                    let ny = y as i32 + dy;
+                    let nz = z as i32 + dz;
+
+                    if nx < 0 || ny < 0 || nz < 0 {
+                        continue;
+                    }
+
+                    let (nx, ny, nz) = (nx as usize, ny as usize, nz as usize);
+
+                    if nx >= self.width() || ny >= self.height() || nz >= self.depth() {
+                        continue;
+                    }
+
+                    let nidx = self.idx(nx, ny, nz);
+                    if !visited[nidx] && self[nidx].is_alive() {
+                        visited[nidx] = true;
+                        queue.push_back(nidx);
+                    }
+                }
+            }
+
+            components.push(component);
+        }
+
+        components
+    }
+
+    #[must_use]
+    pub fn percolates(&self, components: &[Vec<usize>], axis: Axis) -> bool {
+        for comp in components {
+            let mut min = usize::MAX;
+            let mut max = 0;
+
+            for &idx in comp {
+                let (x, y, z) = self.pos(idx);
+                let v = match axis {
+                    Axis::X => x,
+                    Axis::Y => y,
+                    Axis::Z => z,
+                };
+
+                min = min.min(v);
+                max = max.max(v);
+            }
+
+            let limit = match axis {
+                Axis::X => self.width() - 1,
+                Axis::Y => self.height() - 1,
+                Axis::Z => self.depth() - 1,
+            };
+
+            if min == 0 && max == limit {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    #[must_use]
+    pub fn neighbor_stats(&self, nb: &CANeighborhood) -> (usize, usize, f64) {
+        let mut min = usize::MAX;
+        let mut max = 0;
+        let mut sum = 0usize;
+        let mut count = 0usize;
+
+        for z in 0..self.depth {
+            for y in 0..self.height {
+                for x in 0..self.width {
+                    let n = self.count_air_neighbors(x, y, z, nb);
+                    min = min.min(n);
+                    max = max.max(n);
+                    sum += n;
+                    count += 1;
+                }
+            }
+        }
+
+        (min, max, sum as f64 / count as f64)
+    }
 }
 
 impl Index<usize> for CAContext {
@@ -251,10 +382,25 @@ impl CAEngine {
         }
     }
 
-    pub fn run(&mut self, iterations: usize) {
-        for _ in 0..iterations {
+    pub fn run(&mut self, iterations: usize, log: &mut Vec<String>) {
+        for iter in 0..iterations {
+            // LOGGING
+            let alive = self.context.total_air_cells();
+            let (min_n, max_n, mean_n) = self.context.neighbor_stats(&self.config.neighborhood);
+
+            log.push(format!(
+                "iter={iter} alive={alive} min_n={min_n} max_n={max_n} mean_n={mean_n:.2}"
+            ));
+
             self.run_iteration();
         }
+
+        let alive = self.context.total_air_cells();
+        let (min_n, max_n, mean_n) = self.context.neighbor_stats(&self.config.neighborhood);
+
+        log.push(format!(
+            "iter={iterations} alive={alive} min_n={min_n} max_n={max_n} mean_n={mean_n:.2}"
+        ));
     }
 
     pub fn run_iteration(&mut self) {
