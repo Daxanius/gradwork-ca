@@ -1,7 +1,8 @@
-use std::{path::Path, sync::Mutex, time::Instant};
+use std::{fs::File, path::Path, sync::Mutex, time::Instant};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
+use sysinfo::System;
 
 use crate::{
     ca::{CAConfig, CAContext, CAEngine},
@@ -60,6 +61,7 @@ impl Runner {
             });
 
         self.write_results();
+        Self::write_hardware_info().expect("Failed to write hardware info");
         pb.finish_with_message("Cavegen complete");
     }
 
@@ -124,5 +126,12 @@ impl Runner {
         }
 
         writer.flush().unwrap();
+    }
+
+    fn write_hardware_info() -> std::io::Result<()> {
+        let sys = System::new_all();
+        let file = File::create("data/hardware.json")?;
+        serde_json::to_writer_pretty(file, &sys)?;
+        Ok(())
     }
 }
