@@ -15,6 +15,12 @@ fn metric_to_color(metric_value: f32, min: f32, max: f32) -> u8 {
     normalized as u8
 }
 
+#[derive(Hash, Eq, PartialEq)]
+pub struct ConfigKey {
+    pub neighborhood: String,
+    pub ruleset: String,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RunMetadata {
     pub run_id: String,
@@ -432,5 +438,102 @@ impl TunnelStats {
             mean,
             std: var.sqrt(),
         }
+    }
+}
+
+#[derive(Serialize)]
+pub struct DiversityStats {
+    pub neighborhood: String,
+    pub ruleset: String,
+
+    pub lcr_mean: f64,
+    pub lcr_std: f64,
+    pub lcr_cv: f64,
+    pub lcr_variance: f64,
+
+    pub roughness_mean_mean: f64,
+    pub roughness_mean_std: f64,
+    pub roughness_mean_cv: f64,
+
+    pub porosity_mean: f64,
+    pub porosity_std: f64,
+    pub porosity_cv: f64,
+
+    pub duration_mean_ms: f64,
+    pub duration_std_ms: f64,
+    pub duration_cv: f64,
+}
+
+impl DiversityStats {
+    #[must_use]
+    pub fn from_runs(key: &ConfigKey, runs: &[&RunResults]) -> DiversityStats {
+        let lcr: Vec<f64> = runs.iter().map(|r| r.lcr).collect();
+        let rough: Vec<f64> = runs.iter().map(|r| r.roughness_mean).collect();
+        let porosity: Vec<f64> = runs.iter().map(|r| r.porosity).collect();
+        let duration: Vec<f64> = runs.iter().map(|r| r.duration_ms as f64).collect();
+
+        let (lcr_mean, lcr_std) = Self::mean_std(&lcr);
+        let (rough_mean, rough_std) = Self::mean_std(&rough);
+        let (poro_mean, poro_std) = Self::mean_std(&porosity);
+        let (dur_mean, dur_std) = Self::mean_std(&duration);
+
+        DiversityStats {
+            neighborhood: key.neighborhood.clone(),
+            ruleset: key.ruleset.clone(),
+
+            lcr_mean,
+            lcr_std,
+            lcr_cv: Self::cv(lcr_mean, lcr_std),
+            lcr_variance: lcr_std.powi(2),
+
+            roughness_mean_mean: rough_mean,
+            roughness_mean_std: rough_std,
+            roughness_mean_cv: Self::cv(rough_mean, rough_std),
+
+            porosity_mean: poro_mean,
+            porosity_std: poro_std,
+            porosity_cv: Self::cv(poro_mean, poro_std),
+
+            duration_mean_ms: dur_mean,
+            duration_std_ms: dur_std,
+            duration_cv: Self::cv(dur_mean, dur_std),
+        }
+    }
+
+    pub fn save(&self, file_path: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+        self.append_diversity_stats(file_path)?;
+        Ok(())
+    }
+
+    fn mean_std(values: &[f64]) -> (f64, f64) {
+        let n = values.len().max(1) as f64;
+        let mean = values.iter().sum::<f64>() / n;
+        let var = values.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / n;
+        (mean, var.sqrt())
+    }
+
+    fn cv(mean: f64, std: f64) -> f64 {
+        if mean.abs() > f64::EPSILON {
+            std / mean
+        } else {
+            0.0
+        }
+    }
+
+    fn append_diversity_stats(&self, file_path: &std::path::Path) -> csv::Result<()> {
+        fs::create_dir_all(file_path)?;
+        let file_exists = Path::new(file_path).exists();
+        let file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(file_path)?;
+
+        let mut writer = WriterBuilder::new()
+            .has_headers(!file_exists)
+            .from_writer(file);
+
+        writer.serialize(self)?;
+        writer.flush()?;
+        Ok(())
     }
 }

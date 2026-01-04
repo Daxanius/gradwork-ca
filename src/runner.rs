@@ -1,4 +1,4 @@
-use std::{fs::File, path::Path, sync::Mutex, time::Instant};
+use std::{collections::HashMap, fs::File, path::Path, sync::Mutex, time::Instant};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
@@ -6,7 +6,7 @@ use sysinfo::System;
 
 use crate::{
     ca::{CAConfig, CAContext, CAEngine},
-    data::{RunInfo, RunMetadata, RunResults},
+    data::{ConfigKey, RunInfo, RunMetadata, RunResults},
 };
 
 pub struct RunnerConfig {
@@ -61,6 +61,7 @@ impl Runner {
             });
 
         self.write_results();
+        self.write_diversity_stats();
         Self::write_hardware_info().expect("Failed to write hardware info");
         pb.finish_with_message("Cavegen complete");
     }
@@ -115,6 +116,21 @@ impl Runner {
         res_lock.push(results);
     }
 
+    fn group_by_config(results: &[RunResults]) -> HashMap<ConfigKey, Vec<&RunResults>> {
+        let mut map = HashMap::new();
+
+        for r in results {
+            let key = ConfigKey {
+                neighborhood: r.neighborhood.clone(),
+                ruleset: r.ruleset.clone(),
+            };
+
+            map.entry(key).or_insert_with(Vec::new).push(r);
+        }
+
+        map
+    }
+
     fn write_results(&self) {
         let results = self.results.lock().unwrap();
 
@@ -123,6 +139,21 @@ impl Runner {
 
         for r in results.iter() {
             writer.serialize(r).unwrap();
+        }
+
+        writer.flush().unwrap();
+    }
+
+    fn write_diversity_stats(&self) {
+        let results = self.results.lock().unwrap();
+        let grouped = Self::group_by_config(&results);
+
+        let file = std::fs::File::create("data/diversity_stats.csv").unwrap();
+        let mut writer = csv::Writer::from_writer(file);
+
+        for (key, runs) in &grouped {
+            let stats = crate::data::DiversityStats::from_runs(key, runs);
+            writer.serialize(stats).unwrap();
         }
 
         writer.flush().unwrap();
