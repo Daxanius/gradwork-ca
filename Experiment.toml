@@ -52,6 +52,21 @@ birth = [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
 survival = [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]
 
 [[rulesets]]
+name = "VN_B234_S123"
+birth = [2, 3, 4]
+survival = [1, 2, 3]
+
+[[rulesets]]
+name = "VN_B34_S23"
+birth = [3, 4]
+survival = [2, 3]
+
+[[rulesets]]
+name = "VN_B23_S123"
+birth = [2, 3]
+survival = [1, 2, 3]
+
+[[rulesets]]
 name = "B50-70_S45-75"
 birth = [
     50,
