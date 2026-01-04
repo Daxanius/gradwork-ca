@@ -36,6 +36,7 @@ pub struct RunMetadata {
 
 impl RunMetadata {
     #[must_use]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         seed: u64,
         neighborhood: String,
