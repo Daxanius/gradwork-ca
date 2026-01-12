@@ -133,7 +133,7 @@ impl RunInfo {
             for y in 0..self.context.height() {
                 for x in 0..self.context.width() {
                     let cell = self.context.get(x, y, z);
-                    if cell.is_solid() {
+                    if !cell.is_air() {
                         vox.add_voxel(x as i32, y as i32, z as i32, 0);
                     }
                 }
@@ -193,7 +193,7 @@ impl RunResults {
     pub fn from_context(meta: &RunMetadata, ctx: &CAContext, duration_ms: u128) -> Self {
         // 1. Connected components (6-connectivity)
         let components = ctx.connected_components();
-        let v_total = ctx.total_air_cells();
+        let v_total = ctx.total_solid_cells();
         let n_comp = components.len();
         let v_max = components.iter().map(std::vec::Vec::len).max().unwrap_or(0);
         let lcr = if v_total > 0 {
@@ -286,7 +286,7 @@ impl RoughnessStats {
         for z in 0..ctx.depth() {
             for y in 0..ctx.height() {
                 for x in 0..ctx.width() {
-                    if !ctx.get(x, y, z).is_solid() {
+                    if ctx.get(x, y, z).is_air() {
                         continue;
                     }
 
@@ -310,7 +310,7 @@ impl RoughnessStats {
                             continue;
                         }
 
-                        if ctx.get(nx, ny, nz).is_solid() {
+                        if ctx.get(nx, ny, nz).is_air() {
                             air += 1;
                         } else {
                             solid = true;
@@ -386,7 +386,7 @@ impl TunnelStats {
                     break;
                 }
 
-                if !ctx.get(nx, ny, nz).is_solid() {
+                if ctx.get(nx, ny, nz).is_air() {
                     dist[idx] = 1;
                     queue.push_back(idx);
                     break;
@@ -412,7 +412,7 @@ impl TunnelStats {
                 }
 
                 let nidx = ctx.idx(nx, ny, nz);
-                if ctx[nidx].is_solid() && dist[nidx] > dist[idx] + 1 {
+                if ctx[nidx].is_air() && dist[nidx] > dist[idx] + 1 {
                     dist[nidx] = dist[idx] + 1;
                     queue.push_back(nidx);
                 }
