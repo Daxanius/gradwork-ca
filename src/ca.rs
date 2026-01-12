@@ -1,4 +1,4 @@
-use rand::{Rng, SeedableRng, rngs::SmallRng};
+use rand::{SeedableRng, rngs::SmallRng, seq::SliceRandom};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -141,16 +141,20 @@ impl CAContext {
         height: usize,
         depth: usize,
         seed: u64,
-        air_probability: f64,
+        air_percentage: f64,
     ) -> Self {
         let n = width * height * depth;
+        let air_cells = (n as f64 * air_percentage).round() as usize;
+        let solid_cells = n - air_cells;
+
+        // Create vector with exact counts
         let mut cells = Vec::with_capacity(n);
+        cells.extend(std::iter::repeat_n(CACell::new(1), air_cells)); // air
+        cells.extend(std::iter::repeat_n(CACell::new(0), solid_cells)); // solid
 
+        // Shuffle to randomize positions
         let mut rng = SmallRng::seed_from_u64(seed);
-
-        for _ in 0..n {
-            cells.push(CACell::new(u8::from(rng.random_bool(air_probability))));
-        }
+        cells.shuffle(&mut rng);
 
         Self {
             width,

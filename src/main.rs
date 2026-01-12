@@ -27,7 +27,7 @@ struct Args {
 
     /// Initial air probability (0.0–1.0)
     #[arg(long, default_value_t = 0.45)]
-    air_prob: f64,
+    air_percentage: f64,
 
     /// Number of CA iterations
     #[arg(long, default_value_t = 6)]
@@ -70,7 +70,7 @@ struct GridConfig {
 
 #[derive(Debug, Deserialize)]
 struct GeneratorConfig {
-    air_prob: f64,
+    air_percentage: f64,
     iterations: usize,
 }
 
@@ -149,8 +149,8 @@ fn build_ruleset(cfg: &RuleConfig) -> CARule {
 fn resolve_config(args: &Args) -> RunnerConfig {
     let mut width = args.width;
     let mut height = args.height;
-    let mut depth = args.depth;
-    let mut air_prob = args.air_prob;
+    let mut depth: usize = args.depth;
+    let mut air_percentage = args.air_percentage;
     let mut iterations = args.iterations;
     let mut seeds = generate_seeds(args.num_seeds, args.base_seed);
 
@@ -166,7 +166,7 @@ fn resolve_config(args: &Args) -> RunnerConfig {
         height = cfg.grid.height;
         depth = cfg.grid.depth;
 
-        air_prob = cfg.generator.air_prob;
+        air_percentage = cfg.generator.air_percentage;
         iterations = cfg.generator.iterations;
 
         seeds = generate_seeds(cfg.seeds.count, cfg.seeds.base);
@@ -184,7 +184,7 @@ fn resolve_config(args: &Args) -> RunnerConfig {
         width,
         height,
         depth,
-        air_prob,
+        air_percentage,
         iterations,
         seeds,
         neighborhoods,

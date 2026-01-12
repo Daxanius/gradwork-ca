@@ -13,7 +13,7 @@ pub struct RunnerConfig {
     pub width: usize,
     pub height: usize,
     pub depth: usize,
-    pub air_prob: f64,
+    pub air_percentage: f64,
     pub iterations: usize,
     pub seeds: Vec<u64>,
     pub neighborhoods: Vec<crate::ca::CANeighborhood>,
@@ -83,7 +83,7 @@ impl Runner {
             self.config.height,
             self.config.depth,
             seed,
-            self.config.air_prob,
+            self.config.air_percentage,
         );
 
         let config = CAConfig {
@@ -108,7 +108,7 @@ impl Runner {
                 self.config.depth,
                 self.config.iterations,
                 rule.name.clone(),
-                self.config.air_prob,
+                self.config.air_percentage,
             ),
             engine.context.clone(),
         );
