@@ -1,5 +1,5 @@
 {
-    "folder": "data/experiment",
+    "folder": "data/pilot",
     "grid": {
         "width": 128,
         "height": 128,
@@ -27,6 +27,18 @@
     ],
     "rulesets": [
         {
+            "name": "T1",
+            "type": {
+                "threshold": 1
+            }
+        },
+        {
+            "name": "T3",
+            "type": {
+                "threshold": 3
+            }
+        },
+        {
             "name": "T2",
             "type": {
                 "threshold": 2
@@ -45,15 +57,93 @@
             }
         },
         {
-            "name": "T13",
+            "name": "T6",
             "type": {
-                "threshold": 13
+                "threshold": 6
+            }
+        },
+        {
+            "name": "T7",
+            "type": {
+                "threshold": 2
             }
         },
         {
             "name": "T8",
             "type": {
                 "threshold": 8
+            }
+        },
+        {
+            "name": "T9",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T10",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T11",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T12",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T13",
+            "type": {
+                "threshold": 13
+            }
+        },
+        {
+            "name": "T14",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T15",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T16",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T17",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T18",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T19",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T20",
+            "type": {
+                "threshold": 2
             }
         },
         {
@@ -186,6 +276,130 @@
                         1,
                         2,
                         3
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B5_S45678",
+            "type": {
+                "standard": {
+                    "birth": [
+                        5
+                    ],
+                    "survival": [
+                        4,
+                        5,
+                        6,
+                        7,
+                        8
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B6_S5678",
+            "type": {
+                "standard": {
+                    "birth": [
+                        6
+                    ],
+                    "survival": [
+                        5,
+                        6,
+                        7,
+                        8
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B345_S4",
+            "type": {
+                "standard": {
+                    "birth": [
+                        3,
+                        4,
+                        5
+                    ],
+                    "survival": [
+                        4
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B345_S4",
+            "type": {
+                "standard": {
+                    "birth": [
+                        3,
+                        4,
+                        5
+                    ],
+                    "survival": [
+                        4
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B8_S8",
+            "type": {
+                "standard": {
+                    "birth": [
+                        8
+                    ],
+                    "survival": [
+                        8
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B7_S78",
+            "type": {
+                "standard": {
+                    "birth": [
+                        7
+                    ],
+                    "survival": [
+                        7,
+                        8
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B456_S567",
+            "type": {
+                "standard": {
+                    "birth": [
+                        4,
+                        5,
+                        6
+                    ],
+                    "survival": [
+                        5,
+                        6,
+                        7
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B567_S678",
+            "type": {
+                "standard": {
+                    "birth": [
+                        5,
+                        6,
+                        7
+                    ],
+                    "survival": [
+                        6,
+                        7,
+                        8
                     ]
                 }
             }
