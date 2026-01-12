@@ -129,13 +129,93 @@ impl RunInfo {
         let path = run_dir.join("grid.vox");
         let mut vox = vox_writer::VoxWriter::create_empty();
 
+        let components = self.context.connected_components();
+        let mut air_component_of = vec![None; self.context.cells().len()];
+
+        for (i, comp) in components.iter().enumerate() {
+            for &idx in comp {
+                air_component_of[idx] = Some(i);
+            }
+        }
+
+        let Some((main_comp_idx, _)) = components.iter().enumerate().max_by_key(|(_, c)| c.len())
+        else {
+            for z in 0..self.context.depth() {
+                for y in 0..self.context.height() {
+                    for x in 0..self.context.width() {
+                        let idx = self.context.idx(x, y, z);
+                        if !self.context[idx].is_air() {
+                            vox.add_voxel(x as i32, y as i32, z as i32, 20);
+                        }
+                    }
+                }
+            }
+
+            vox.save_to_file(path.to_string_lossy().to_string())
+                .map_err(std::io::Error::other)?;
+            return Ok(());
+        };
+
+        let dirs = [
+            (1, 0, 0),
+            (-1, 0, 0),
+            (0, 1, 0),
+            (0, -1, 0),
+            (0, 0, 1),
+            (0, 0, -1),
+        ];
+
         for z in 0..self.context.depth() {
             for y in 0..self.context.height() {
                 for x in 0..self.context.width() {
-                    let cell = self.context.get(x, y, z);
-                    if !cell.is_air() {
-                        vox.add_voxel(x as i32, y as i32, z as i32, 0);
+                    let idx = self.context.idx(x, y, z);
+
+                    // Only draw SOLID voxels
+                    if self.context[idx].is_air() {
+                        continue;
                     }
+
+                    let mut touching_main = false;
+                    let mut touching_other = false;
+
+                    for (dx, dy, dz) in dirs {
+                        let nx = x as i32 + dx;
+                        let ny = y as i32 + dy;
+                        let nz = z as i32 + dz;
+
+                        if nx < 0 || ny < 0 || nz < 0 {
+                            continue;
+                        }
+
+                        let (nx, ny, nz) = (nx as usize, ny as usize, nz as usize);
+
+                        if nx >= self.context.width()
+                            || ny >= self.context.height()
+                            || nz >= self.context.depth()
+                        {
+                            continue;
+                        }
+
+                        let nidx = self.context.idx(nx, ny, nz);
+
+                        if let Some(comp_idx) = air_component_of[nidx] {
+                            if comp_idx == main_comp_idx {
+                                touching_main = true;
+                                break;
+                            }
+                            touching_other = true;
+                        }
+                    }
+
+                    let color = if touching_main {
+                        200
+                    } else if touching_other {
+                        120
+                    } else {
+                        20
+                    };
+
+                    vox.add_voxel(x as i32, y as i32, z as i32, color);
                 }
             }
         }
