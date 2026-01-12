@@ -27,6 +27,36 @@
     ],
     "rulesets": [
         {
+            "name": "T2",
+            "type": {
+                "threshold": 2
+            }
+        },
+        {
+            "name": "T4",
+            "type": {
+                "threshold": 4
+            }
+        },
+        {
+            "name": "T5",
+            "type": {
+                "threshold": 5
+            }
+        },
+        {
+            "name": "T13",
+            "type": {
+                "threshold": 13
+            }
+        },
+        {
+            "name": "T8",
+            "type": {
+                "threshold": 8
+            }
+        },
+        {
             "name": "B567_S456",
             "type": {
                 "standard": {

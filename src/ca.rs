@@ -100,9 +100,7 @@ pub enum CARuleType {
         birth: Vec<usize>,
         survival: Vec<usize>,
     },
-    Threshold {
-        threshold: usize,
-    }, // If neighbors < threshold => air
+    Threshold(usize),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -433,6 +431,7 @@ impl CAEngine {
         let (old, new) = (&self.context, &mut self.buffer);
 
         new.cells_mut()
+            //.iter_mut()
             .par_iter_mut()
             .enumerate()
             .for_each(|(i, cell)| {
@@ -449,7 +448,7 @@ impl CAEngine {
                             birth.contains(&alive_neighbors)
                         }
                     }
-                    CARuleType::Threshold { threshold } => alive_neighbors < *threshold,
+                    CARuleType::Threshold(threshold) => alive_neighbors < *threshold,
                 };
 
                 cell.set_state(u8::from(next));
