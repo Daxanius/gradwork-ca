@@ -133,7 +133,7 @@ impl RunInfo {
             for y in 0..self.context.height() {
                 for x in 0..self.context.width() {
                     let cell = self.context.get(x, y, z);
-                    if cell.is_alive() {
+                    if cell.is_solid() {
                         vox.add_voxel(x as i32, y as i32, z as i32, 0);
                     }
                 }
@@ -286,7 +286,7 @@ impl RoughnessStats {
         for z in 0..ctx.depth() {
             for y in 0..ctx.height() {
                 for x in 0..ctx.width() {
-                    if !ctx.get(x, y, z).is_alive() {
+                    if !ctx.get(x, y, z).is_solid() {
                         continue;
                     }
 
@@ -310,7 +310,7 @@ impl RoughnessStats {
                             continue;
                         }
 
-                        if ctx.get(nx, ny, nz).is_alive() {
+                        if ctx.get(nx, ny, nz).is_solid() {
                             air += 1;
                         } else {
                             solid = true;
@@ -386,7 +386,7 @@ impl TunnelStats {
                     break;
                 }
 
-                if !ctx.get(nx, ny, nz).is_alive() {
+                if !ctx.get(nx, ny, nz).is_solid() {
                     dist[idx] = 1;
                     queue.push_back(idx);
                     break;
@@ -412,7 +412,7 @@ impl TunnelStats {
                 }
 
                 let nidx = ctx.idx(nx, ny, nz);
-                if ctx[nidx].is_alive() && dist[nidx] > dist[idx] + 1 {
+                if ctx[nidx].is_solid() && dist[nidx] > dist[idx] + 1 {
                     dist[nidx] = dist[idx] + 1;
                     queue.push_back(nidx);
                 }

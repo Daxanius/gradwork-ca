@@ -25,7 +25,7 @@ impl CACell {
     }
 
     #[must_use]
-    pub fn is_alive(&self) -> bool {
+    pub fn is_solid(&self) -> bool {
         self.0 != 0
     }
 
@@ -209,7 +209,7 @@ impl CAContext {
 
     #[must_use]
     pub fn total_air_cells(&self) -> usize {
-        self.cells.iter().filter(|cell| cell.is_alive()).count()
+        self.cells.iter().filter(|cell| !cell.is_solid()).count()
     }
 
     #[must_use]
@@ -252,7 +252,7 @@ impl CAContext {
         ];
 
         for i in 0..n {
-            if visited[i] || self[i].is_alive() {
+            if visited[i] || self[i].is_solid() {
                 continue;
             }
 
@@ -282,7 +282,7 @@ impl CAContext {
                     }
 
                     let nidx = self.idx(nx, ny, nz);
-                    if !visited[nidx] && !self[nidx].is_alive() {
+                    if !visited[nidx] && !self[nidx].is_solid() {
                         visited[nidx] = true;
                         queue.push_back(nidx);
                     }
@@ -418,7 +418,7 @@ impl CAEngine {
                 let (x, y, z) = old.pos(i);
 
                 let alive_neighbors = old.count_air_neighbors(x, y, z, nb);
-                let alive = old[i].is_alive();
+                let alive = old[i].is_solid();
 
                 let next = if alive {
                     rule.survival.contains(&alive_neighbors)
