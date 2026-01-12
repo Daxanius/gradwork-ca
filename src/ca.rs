@@ -94,10 +94,22 @@ impl CANeighborhood {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CARuleType {
+    Standard {
+        birth: Vec<usize>,
+        survival: Vec<usize>,
+    },
+    Threshold {
+        threshold: usize,
+    }, // If neighbors < threshold => air
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CARule {
     pub name: String,
-    pub birth: Vec<usize>,
-    pub survival: Vec<usize>,
+    #[serde(rename = "type")]
+    pub rule_type: CARuleType,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -429,10 +441,15 @@ impl CAEngine {
                 let alive_neighbors = old.count_air_neighbors(x, y, z, nb);
                 let alive = old[i].is_air();
 
-                let next = if alive {
-                    rule.survival.contains(&alive_neighbors)
-                } else {
-                    rule.birth.contains(&alive_neighbors)
+                let next = match &rule.rule_type {
+                    CARuleType::Standard { birth, survival } => {
+                        if alive {
+                            survival.contains(&alive_neighbors)
+                        } else {
+                            birth.contains(&alive_neighbors)
+                        }
+                    }
+                    CARuleType::Threshold { threshold } => alive_neighbors < *threshold,
                 };
 
                 cell.set_state(u8::from(next));

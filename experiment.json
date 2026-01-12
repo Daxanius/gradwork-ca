@@ -1,0 +1,260 @@
+{
+    "folder": "data/experiment",
+    "grid": {
+        "width": 128,
+        "height": 128,
+        "depth": 128
+    },
+    "generator": {
+        "air_percentage": 0.5,
+        "iterations": 6
+    },
+    "seeds": {
+        "base": 0,
+        "count": 30
+    },
+    "neighborhoods": [
+        {
+            "type": "von_neumann"
+        },
+        {
+            "type": "moore"
+        },
+        {
+            "type": "extended_moore",
+            "radius": 2
+        }
+    ],
+    "rulesets": [
+        {
+            "name": "B567_S456",
+            "type": {
+                "standard": {
+                    "birth": [
+                        5,
+                        6,
+                        7
+                    ],
+                    "survival": [
+                        4,
+                        5,
+                        6
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B678_S567",
+            "type": {
+                "standard": {
+                    "birth": [
+                        6,
+                        7,
+                        8
+                    ],
+                    "survival": [
+                        5,
+                        6,
+                        7
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B456_S345",
+            "type": {
+                "standard": {
+                    "birth": [
+                        4,
+                        5,
+                        6
+                    ],
+                    "survival": [
+                        3,
+                        4,
+                        5
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B678_S4567",
+            "type": {
+                "standard": {
+                    "birth": [
+                        6,
+                        7,
+                        8
+                    ],
+                    "survival": [
+                        4,
+                        5,
+                        6,
+                        7
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B567_S567",
+            "type": {
+                "standard": {
+                    "birth": [
+                        5,
+                        6,
+                        7
+                    ],
+                    "survival": [
+                        5,
+                        6,
+                        7
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B30-40_S35-45",
+            "type": {
+                "standard": {
+                    "birth": [
+                        30,
+                        31,
+                        32,
+                        33,
+                        34,
+                        35,
+                        36,
+                        37,
+                        38,
+                        39,
+                        40
+                    ],
+                    "survival": [
+                        35,
+                        36,
+                        37,
+                        38,
+                        39,
+                        40,
+                        41,
+                        42,
+                        43,
+                        44,
+                        45
+                    ]
+                }
+            }
+        },
+        {
+            "name": "VN_B234_S123",
+            "type": {
+                "standard": {
+                    "birth": [
+                        2,
+                        3,
+                        4
+                    ],
+                    "survival": [
+                        1,
+                        2,
+                        3
+                    ]
+                }
+            }
+        },
+        {
+            "name": "VN_B34_S23",
+            "type": {
+                "standard": {
+                    "birth": [
+                        3,
+                        4
+                    ],
+                    "survival": [
+                        2,
+                        3
+                    ]
+                }
+            }
+        },
+        {
+            "name": "VN_B23_S123",
+            "type": {
+                "standard": {
+                    "birth": [
+                        2,
+                        3
+                    ],
+                    "survival": [
+                        1,
+                        2,
+                        3
+                    ]
+                }
+            }
+        },
+        {
+            "name": "B50-70_S45-75",
+            "type": {
+                "standard": {
+                    "birth": [
+                        50,
+                        51,
+                        52,
+                        53,
+                        54,
+                        55,
+                        56,
+                        57,
+                        58,
+                        59,
+                        60,
+                        61,
+                        62,
+                        63,
+                        64,
+                        65,
+                        66,
+                        67,
+                        68,
+                        69,
+                        70
+                    ],
+                    "survival": [
+                        45,
+                        46,
+                        47,
+                        48,
+                        49,
+                        50,
+                        51,
+                        52,
+                        53,
+                        54,
+                        55,
+                        56,
+                        57,
+                        58,
+                        59,
+                        60,
+                        61,
+                        62,
+                        63,
+                        64,
+                        65,
+                        66,
+                        67,
+                        68,
+                        69,
+                        70,
+                        71,
+                        72,
+                        73,
+                        74,
+                        75
+                    ]
+                }
+            }
+        }
+    ]
+}
