@@ -16,7 +16,7 @@ pub struct RunnerConfig {
     pub air_prob: f64,
     pub iterations: usize,
     pub seeds: Vec<u64>,
-    pub neighbourhoods: Vec<crate::ca::CANeighborhood>,
+    pub neighborhoods: Vec<crate::ca::CANeighborhood>,
     pub rulesets: Vec<crate::ca::CARule>,
 }
 
@@ -28,7 +28,7 @@ pub struct Runner {
 impl Runner {
     #[must_use]
     pub fn new(config: RunnerConfig) -> Self {
-        let total_runs = config.neighbourhoods.len() * config.rulesets.len() * config.seeds.len();
+        let total_runs = config.neighborhoods.len() * config.rulesets.len() * config.seeds.len();
 
         Runner {
             config,
@@ -38,7 +38,7 @@ impl Runner {
 
     pub fn run(&self) {
         let total_runs =
-            self.config.neighbourhoods.len() * self.config.rulesets.len() * self.config.seeds.len();
+            self.config.neighborhoods.len() * self.config.rulesets.len() * self.config.seeds.len();
 
         let pb = ProgressBar::new(total_runs as u64);
         pb.set_style(
@@ -47,7 +47,7 @@ impl Runner {
                 .progress_chars("=> "),
         );
 
-        (self.config.neighbourhoods.iter())
+        (self.config.neighborhoods.iter())
             .flat_map(|n| {
                 self.config
                     .rulesets

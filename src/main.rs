@@ -51,7 +51,7 @@ struct ExperimentConfig {
     grid: GridConfig,
     generator: GeneratorConfig,
     seeds: SeedConfig,
-    neighbourhoods: Vec<NeighbourhoodConfig>,
+    neighborhoods: Vec<NeighborhoodConfig>,
     rulesets: Vec<RuleConfig>,
 }
 
@@ -75,7 +75,7 @@ struct SeedConfig {
 }
 
 #[derive(Debug, Deserialize)]
-struct NeighbourhoodConfig {
+struct NeighborhoodConfig {
     #[serde(rename = "type")]
     kind: String,
     radius: Option<i32>,
@@ -88,7 +88,7 @@ struct RuleConfig {
     survival: Vec<usize>,
 }
 
-fn neighbourhoods() -> Vec<CANeighborhood> {
+fn neighborhoods() -> Vec<CANeighborhood> {
     vec![
         CANeighborhood::von_neumann(),
         CANeighborhood::moore(),
@@ -120,7 +120,7 @@ fn load_config(path: &std::path::Path) -> ExperimentConfig {
     toml::from_str(&text).expect("Invalid config format")
 }
 
-fn build_neighbourhood(cfg: &NeighbourhoodConfig) -> CANeighborhood {
+fn build_neighborhood(cfg: &NeighborhoodConfig) -> CANeighborhood {
     match cfg.kind.as_str() {
         "von_neumann" => CANeighborhood::von_neumann(),
         "moore" => CANeighborhood::moore(),
@@ -148,7 +148,7 @@ fn resolve_config(args: &Args) -> RunnerConfig {
     let mut iterations = args.iterations;
     let mut seeds = generate_seeds(args.num_seeds, args.base_seed);
 
-    let mut neighbourhoods = neighbourhoods();
+    let mut neighborhoods = neighborhoods();
     let mut rulesets = rulesets();
 
     if let Some(path) = &args.file {
@@ -163,7 +163,7 @@ fn resolve_config(args: &Args) -> RunnerConfig {
 
         seeds = generate_seeds(cfg.seeds.count, cfg.seeds.base);
 
-        neighbourhoods = cfg.neighbourhoods.iter().map(build_neighbourhood).collect();
+        neighborhoods = cfg.neighborhoods.iter().map(build_neighborhood).collect();
 
         rulesets = cfg.rulesets.iter().map(build_ruleset).collect();
     }
@@ -175,7 +175,7 @@ fn resolve_config(args: &Args) -> RunnerConfig {
         air_prob,
         iterations,
         seeds,
-        neighbourhoods,
+        neighborhoods,
         rulesets,
     }
 }
