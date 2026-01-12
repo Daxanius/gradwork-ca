@@ -1,5 +1,5 @@
 [folder]
-output = "experiment"
+output = "pilot"
 
 [grid]
 width = 128
@@ -12,7 +12,7 @@ iterations = 6
 
 [seeds]
 base = 0
-count = 30
+count = 5
 
 [[neighborhoods]]
 type = "von_neumann"

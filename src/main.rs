@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use gradwork_ca::ca::{CANeighborhood, CARule};
 use gradwork_ca::runner::{Runner, RunnerConfig};
@@ -47,7 +47,13 @@ struct Args {
 }
 
 #[derive(Debug, Deserialize)]
+struct FolderConfig {
+    output: PathBuf,
+}
+
+#[derive(Debug, Deserialize)]
 struct ExperimentConfig {
+    folder: Option<FolderConfig>,
     grid: GridConfig,
     generator: GeneratorConfig,
     seeds: SeedConfig,
@@ -151,6 +157,8 @@ fn resolve_config(args: &Args) -> RunnerConfig {
     let mut neighborhoods = neighborhoods();
     let mut rulesets = rulesets();
 
+    let mut output_dir = PathBuf::from("data");
+
     if let Some(path) = &args.file {
         let cfg = load_config(Path::new(path));
 
@@ -166,6 +174,10 @@ fn resolve_config(args: &Args) -> RunnerConfig {
         neighborhoods = cfg.neighborhoods.iter().map(build_neighborhood).collect();
 
         rulesets = cfg.rulesets.iter().map(build_ruleset).collect();
+
+        if let Some(folder) = cfg.folder {
+            output_dir = folder.output;
+        }
     }
 
     RunnerConfig {
@@ -177,6 +189,7 @@ fn resolve_config(args: &Args) -> RunnerConfig {
         seeds,
         neighborhoods,
         rulesets,
+        output_dir,
     }
 }
 

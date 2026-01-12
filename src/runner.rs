@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::File, path::Path, sync::Mutex, time::Instant};
+use std::{collections::HashMap, path::PathBuf, sync::Mutex, time::Instant};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
@@ -18,6 +18,7 @@ pub struct RunnerConfig {
     pub seeds: Vec<u64>,
     pub neighborhoods: Vec<crate::ca::CANeighborhood>,
     pub rulesets: Vec<crate::ca::CARule>,
+    pub output_dir: PathBuf,
 }
 
 pub struct Runner {
@@ -37,6 +38,10 @@ impl Runner {
     }
 
     pub fn run(&self) {
+        // Ensure directory structure exists
+        std::fs::create_dir_all(self.config.output_dir.join("runs"))
+            .expect("Failed to create runs directory");
+
         let total_runs =
             self.config.neighborhoods.len() * self.config.rulesets.len() * self.config.seeds.len();
 
@@ -62,7 +67,8 @@ impl Runner {
 
         self.write_results();
         self.write_diversity_stats();
-        Self::write_hardware_info().expect("Failed to write hardware info");
+        self.write_hardware_info()
+            .expect("Failed to write hardware info");
         pb.finish_with_message("Cavegen complete");
     }
 
@@ -106,9 +112,11 @@ impl Runner {
             ),
             engine.context.clone(),
         );
+
         info.set_logs(logs);
-        info.save(Path::new("data/runs/"))
-            .expect("Something went wrong");
+
+        let runs_dir = self.config.output_dir.join("runs");
+        info.save(&runs_dir).expect("Failed to save run info");
 
         let results =
             RunResults::from_context(&info.metadata, &engine.context, elapsed.as_millis());
@@ -134,7 +142,8 @@ impl Runner {
     fn write_results(&self) {
         let results = self.results.lock().unwrap();
 
-        let file = std::fs::File::create("data/metrics.csv").unwrap();
+        let path = self.config.output_dir.join("metrics.csv");
+        let file = std::fs::File::create(path).unwrap();
         let mut writer = csv::Writer::from_writer(file);
 
         for r in results.iter() {
@@ -148,7 +157,8 @@ impl Runner {
         let results = self.results.lock().unwrap();
         let grouped = Self::group_by_config(&results);
 
-        let file = std::fs::File::create("data/diversity_stats.csv").unwrap();
+        let path = self.config.output_dir.join("diversity_stats.csv");
+        let file = std::fs::File::create(path).unwrap();
         let mut writer = csv::Writer::from_writer(file);
 
         for (key, runs) in &grouped {
@@ -159,9 +169,10 @@ impl Runner {
         writer.flush().unwrap();
     }
 
-    fn write_hardware_info() -> std::io::Result<()> {
+    fn write_hardware_info(&self) -> std::io::Result<()> {
         let sys = System::new_all();
-        let file = File::create("data/hardware.json")?;
+        let path = self.config.output_dir.join("hardware.json");
+        let file = std::fs::File::create(path).unwrap();
         serde_json::to_writer_pretty(file, &sys)?;
         Ok(())
     }

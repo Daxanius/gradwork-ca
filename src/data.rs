@@ -9,12 +9,6 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
 
-fn metric_to_color(metric_value: f32, min: f32, max: f32) -> u8 {
-    // normalize to 1..255
-    let normalized = ((metric_value - min) / (max - min) * 254.0 + 1.0).clamp(1.0, 255.0);
-    normalized as u8
-}
-
 #[derive(Hash, Eq, PartialEq)]
 pub struct ConfigKey {
     pub neighborhood: String,
