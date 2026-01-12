@@ -1,5 +1,5 @@
 [folder]
-output = "experiment"
+output = "data/experiment"
 
 [grid]
 width = 128
@@ -7,7 +7,7 @@ height = 128
 depth = 128
 
 [generator]
-air_prob = 0.1
+air_prob = 0.5
 iterations = 6
 
 [seeds]
