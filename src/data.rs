@@ -461,7 +461,7 @@ impl TunnelStats {
 
                 let (nx, ny, nz) = (nx as usize, ny as usize, nz as usize);
                 if nx >= ctx.width() || ny >= ctx.height() || nz >= ctx.depth() {
-                    dist[idx] = 1;
+                    dist[idx] = 0;
                     queue.push_back(idx);
                     break;
                 }
