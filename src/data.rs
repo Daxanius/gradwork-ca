@@ -273,7 +273,7 @@ impl RunResults {
     pub fn from_context(meta: &RunMetadata, ctx: &CAContext, duration_ms: u128) -> Self {
         // 1. Connected components (6-connectivity)
         let components = ctx.connected_components();
-        let v_total = ctx.total_solid_cells();
+        let v_total = ctx.total_air_cells();
         let n_comp = components.len();
         let v_max = components.iter().map(std::vec::Vec::len).max().unwrap_or(0);
         let lcr = if v_total > 0 {
