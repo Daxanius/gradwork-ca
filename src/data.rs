@@ -466,7 +466,7 @@ impl TunnelStats {
                     break;
                 }
 
-                if ctx.get(nx, ny, nz).is_air() {
+                if !ctx.get(nx, ny, nz).is_air() {
                     dist[idx] = 1;
                     queue.push_back(idx);
                     break;
