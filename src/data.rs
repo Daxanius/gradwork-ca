@@ -454,7 +454,7 @@ impl TunnelStats {
                 let nz = z as i32 + dz;
 
                 if nx < 0 || ny < 0 || nz < 0 {
-                    dist[idx] = 1;
+                    dist[idx] = 0;
                     queue.push_back(idx);
                     break;
                 }
@@ -467,7 +467,7 @@ impl TunnelStats {
                 }
 
                 if !ctx.get(nx, ny, nz).is_air() {
-                    dist[idx] = 1;
+                    dist[idx] = 0;
                     queue.push_back(idx);
                     break;
                 }
@@ -501,8 +501,9 @@ impl TunnelStats {
 
         let values: Vec<f64> = largest
             .iter()
-            .map(|&i| dist[i] as f64)
-            .filter(|&d| d > 0.0)
+            .map(|&i| dist[i])
+            .filter(|&d| d != i32::MAX)
+            .map(f64::from)
             .collect();
 
         let mean = values.iter().sum::<f64>() / values.len().max(1) as f64;
